@@ -1,0 +1,17 @@
+{
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "files.associations": {
+    "*.a": "riscv",
+    "*.html": "html",
+    "raylib.h": "c",
+    "screens.h": "c",
+    "raymath.h": "c",
+    "pong.h": "c",
+    "play_screen.h": "c",
+    "stdio.h": "c",
+    "intro_screen.h": "c"
+},
+"cSpell.words": [
+    "struct"
+]
+}
