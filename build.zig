@@ -7,22 +7,9 @@ const program_name = "TEMPLATE";
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-
-    const all = b.step(program_name, program_name);
-
-    var dir = try std.fs.cwd().openDir("src", .{ .iterate = true });
-
-    defer if (comptime builtin.zig_version.minor >= 12) dir.close();
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-
-    defer arena.deinit();
-    const allocator = arena.allocator();
-
-    var iter = try dir.walk(allocator);
-    defer iter.deinit();
-
     const exe = b.addExecutable(.{
         .name = program_name,
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -51,6 +38,7 @@ pub fn build(b: *std.Build) !void {
             exe.defineCMacro("PLATFORM_DESKTOP", null);
         },
         .linux => {
+            std.debug.print("running on linux\n", .{});
             exe.linkSystemLibrary("GL");
             exe.linkSystemLibrary("rt");
             exe.linkSystemLibrary("dl");
@@ -60,6 +48,7 @@ pub fn build(b: *std.Build) !void {
             exe.defineCMacro("PLATFORM_DESKTOP", null);
         },
         .macos => {
+            std.debug.print("running on macos\n", .{});
             exe.linkFramework("Foundation");
             exe.linkFramework("Cocoa");
             exe.linkFramework("OpenGL");
@@ -73,6 +62,17 @@ pub fn build(b: *std.Build) !void {
             @panic("Unsupported OS");
         },
     }
+
+    var dir = try std.fs.cwd().openDir("src", .{ .iterate = true });
+    defer if (comptime builtin.zig_version.minor >= 12) dir.close();
+
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
+    const allocator = arena.allocator();
+    var iter = try dir.walk(allocator);
+    defer iter.deinit();
+
     while (try iter.next()) |entry| {
         if (entry.kind != .file) continue;
 
@@ -84,16 +84,5 @@ pub fn build(b: *std.Build) !void {
         exe.addCSourceFile(.{ .file = b.path(path), .flags = &.{} });
     }
 
-    const install_cmd = b.addInstallArtifact(exe, .{});
-
-    const run_cmd = b.addRunArtifact(exe);
-    run_cmd.step.dependOn(&install_cmd.step);
-
-    const run_step = b.step("run " ++ program_name, program_name);
-    run_step.dependOn(&run_cmd.step);
-
-    all.dependOn(&install_cmd.step);
-
-    const allOut = b.getInstallStep();
-    allOut.dependOn(all);
+    b.installArtifact(exe);
 }
