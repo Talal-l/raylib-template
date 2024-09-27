@@ -4,7 +4,7 @@
 const int SCREEN_WIDTH = 400;
 const int SCREEN_HEIGHT = 400;
 
-int main()
+int main_()
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "TEMPLATE");
     SetTargetFPS(60);
