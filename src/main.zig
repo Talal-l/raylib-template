@@ -41,12 +41,19 @@ pub fn main() !void {
 }
 
 var game_dyn_lib: ?std.DynLib = null;
+const builtin = @import("builtin");
 fn loadGameDll() !void {
     if (game_dyn_lib != null) return error.AlreadyLoaded;
 
-    var dyn_lib = std.DynLib.open("zig-out/lib/libgame.so") catch {
+    var dyn_lib = switch (builtin.target.os.tag) {
+        .macos => std.DynLib.open("zig-out/lib/libgame.dylib"),
+        .windows => std.DynLib.open("zig-out/lib/libgame.dll"),
+        .linux => std.DynLib.open("zig-out/lib/libgame.so"),
+        else => return error.UnsupportedOS,
+    } catch {
         return error.OpenFail;
     };
+
     std.debug.print("dyn_lib: {any}", .{dyn_lib});
 
     game_dyn_lib = dyn_lib;
