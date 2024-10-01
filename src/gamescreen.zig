@@ -39,8 +39,8 @@ var p2: Player = undefined;
 var ball: Ball = undefined;
 var score1: i32 = 0;
 var score2: i32 = 0;
-var score1String = "";
-var score2String = "";
+var score1String = [_]u8{0} ** 10;
+var score2String = [_]u8{0} ** 10;
 
 pub fn init() void {
     p1 = .{
@@ -75,6 +75,11 @@ pub fn init() void {
 }
 
 pub fn update() void {
+    // reset ball on space bar
+    if (rl.IsKeyDown(rl.KEY_SPACE)) {
+        ball.reset();
+    }
+
     // player 1 move logic
     if (rl.IsKeyDown(rl.KEY_W)) p1.rect.y -= 10;
     if (rl.IsKeyDown(rl.KEY_S)) p1.rect.y += 10;
@@ -87,12 +92,16 @@ pub fn update() void {
 
     ball.center = rl.Vector2Add(ball.center, ball.velocity);
 
-    // touch players
-    if (rl.CheckCollisionCircleRec(ball.center, ball.radius, p1.rect) or
-        rl.CheckCollisionCircleRec(ball.center, ball.radius, p2.rect))
-    {
+    // touch player 1
+    if (rl.CheckCollisionCircleRec(ball.center, ball.radius, p1.rect)) {
         ball.bounceHorizontal();
-        ball.velocity.x *= 1.5;
+        ball.velocity = rl.Vector2Scale(ball.velocity, 1.5);
+    }
+
+    // touch player 2
+    if (rl.CheckCollisionCircleRec(ball.center, ball.radius, p2.rect)) {
+        ball.bounceHorizontal();
+        ball.velocity = rl.Vector2Scale(ball.velocity, 1.5);
     }
 
     // touch top and bottom walls
@@ -122,10 +131,12 @@ pub fn draw() void {
     rl.DrawRectangleRec(p2.rect, p2.color);
     rl.DrawCircleV(ball.center, ball.radius, ball.color);
 
-    TODO: create a proper buffer for the score1string
-    _ = std.fmt.formatIntBuf(score1String, score1, 10, .lower, .{});
-    // _ = std.fmt.formatIntBuf(score2String, score2, 10, .lower, .{});
+    _ = std.fmt.formatIntBuf(&score1String, score1, 10, .lower, .{});
+    _ = std.fmt.formatIntBuf(&score2String, score2, 10, .lower, .{});
 
-    // rl.DrawText(score1String, @as(c_int, @as(i32, @intFromFloat(utils.getScreenWidth())) / 2 - 20), 10, 12, rl.WHITE);
-    // rl.DrawText(score2String, utils.getScreenWidth() / 2 + 20, 10, 12, rl.WHITE);
+    const score1PosX = -20 + @as(c_int, @divTrunc(@as(i32, @intFromFloat(utils.getScreenWidth())), 2));
+    rl.DrawText(&score1String, score1PosX, 10, 40, rl.WHITE);
+
+    const score2PosX = 20 + @as(c_int, @divTrunc(@as(i32, @intFromFloat(utils.getScreenWidth())), 2));
+    rl.DrawText(&score2String, score2PosX, 10, 40, rl.WHITE);
 }
