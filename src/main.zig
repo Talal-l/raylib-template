@@ -13,7 +13,7 @@ pub fn main() !void {
     rl.SetWindowMonitor(1);
     gameScreen.init();
     while (!rl.WindowShouldClose()) {
-        if (rl.IsKeyPressed(rl.KEY_X)) {
+        if (rl.IsKeyPressed(rl.KEY_X) or rl.IsKeyPressed(rl.KEY_Q)) {
             rl.CloseWindow();
             return;
         }
