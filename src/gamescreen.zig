@@ -1,13 +1,25 @@
 const std = @import("std");
-const rl = @cImport({
-    @cInclude("raylib.h");
-    @cInclude("raymath.h");
-});
 const utils = @import("utils.zig");
+const rl = @import("rl.zig");
 
 const Player = struct {
+    const width: f32 = 20;
+    const height: f32 = 40;
+
     rect: rl.Rectangle,
     color: rl.Color,
+
+    fn init(posX: f32) Player {
+        return .{
+            .rect = .{
+                .x = posX,
+                .y = utils.getScreenHeight() / 2.0,
+                .width = Player.width,
+                .height = Player.height,
+            },
+            .color = rl.RAYWHITE,
+        };
+    }
 };
 
 const Ball = struct {
@@ -15,6 +27,16 @@ const Ball = struct {
     radius: f32,
     velocity: rl.Vector2,
     color: rl.Color,
+    fn init() Ball {
+        var b: Ball = .{
+            .center = .{},
+            .radius = 10.0,
+            .velocity = .{},
+            .color = rl.RED,
+        };
+        b.reset();
+        return b;
+    }
     fn bounceHorizontal(self: *Ball) void {
         self.velocity.x = -self.velocity.x;
     }
@@ -37,40 +59,16 @@ const Ball = struct {
 var p1: Player = undefined;
 var p2: Player = undefined;
 var ball: Ball = undefined;
+
 var score1: i32 = 0;
 var score2: i32 = 0;
 var score1String = [_]u8{0} ** 10;
 var score2String = [_]u8{0} ** 10;
 
 pub fn init() void {
-    p1 = .{
-        .rect = .{
-            .x = 20,
-            .y = utils.getScreenHeight() / 2.0,
-            .width = 20,
-            .height = 20,
-        },
-        .color = rl.RAYWHITE,
-    };
-
-    p2 = .{
-        .rect = .{
-            .x = utils.getScreenWidth() - 30,
-            .y = utils.getScreenHeight() / 2.0,
-            .width = 20,
-            .height = 20,
-        },
-        .color = rl.RAYWHITE,
-    };
-
-    ball = .{
-        .center = .{},
-        .radius = 10.0,
-        .velocity = .{},
-        .color = rl.RED,
-    };
-    ball.reset();
-
+    p1 = Player.init(20);
+    p2 = Player.init(utils.getScreenWidth() - Player.width - 20);
+    ball = Ball.init();
     std.debug.print("player1: {any}", .{p1});
 }
 
@@ -112,13 +110,13 @@ pub fn update() void {
     }
 
     // touch left wall
-    if (rl.CheckCollisionCircleLine(ball.center, ball.radius, rl.Vector2{ .x = 0, .y = 0 }, rl.Vector2{ .x = 0, .y = utils.getScreenHeight() })) {
+    if (rl.CheckCollisionCircleLine(ball.center, ball.radius, utils.topLeftCorner(), utils.bottomLeftCorner())) {
         score2 += 1;
         ball.reset();
     }
 
     // touch right wall
-    if (rl.CheckCollisionCircleLine(ball.center, ball.radius, rl.Vector2{ .x = utils.getScreenWidth(), .y = 0 }, rl.Vector2{ .x = utils.getScreenWidth(), .y = utils.getScreenHeight() })) {
+    if (rl.CheckCollisionCircleLine(ball.center, ball.radius, utils.topRightCorner(), utils.bottomRightCorner())) {
         score1 += 1;
         ball.reset();
     }
