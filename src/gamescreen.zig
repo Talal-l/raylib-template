@@ -2,7 +2,7 @@ const std = @import("std");
 const utils = @import("utils.zig");
 const rl = @import("rl.zig");
 
-const Player = struct {
+pub const Player = struct {
     const width: f32 = 20;
     const height: f32 = 40;
 
@@ -22,7 +22,7 @@ const Player = struct {
     }
 };
 
-const Ball = struct {
+export const Ball = struct {
     center: rl.Vector2,
     radius: f32,
     velocity: rl.Vector2,
