@@ -25,6 +25,7 @@ pub fn build(b: *std.Build) !void {
     const raylib_dep = b.dependency("raylib", .{
         .target = target,
         .optimize = optimize,
+        .shared = true,
     });
     exe.linkLibrary(raylib_dep.artifact("raylib"));
 
