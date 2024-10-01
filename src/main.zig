@@ -26,13 +26,10 @@ pub fn main() !void {
         if (rl.IsKeyPressed(rl.KEY_R)) {
             // it should never unload a dll that isn't there so unreachable is there to state that intent
             unloadGameDll() catch unreachable;
-
             recompileGameDll() catch {
                 std.debug.print("Failed to recompile game.dll", .{});
             };
-
             loadGameDll() catch @panic("Failed to load game.dll");
-
             gameReload(game_state);
         }
 
