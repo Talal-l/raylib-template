@@ -21,11 +21,26 @@ const Ball = struct {
     fn bounceVertical(self: *Ball) void {
         self.velocity.y = -self.velocity.y;
     }
+    fn reset(self: *Ball) void {
+        self.center = .{
+            .x = utils.getScreenWidth() / 2,
+            .y = utils.getScreenHeight() / 2,
+        };
+
+        self.velocity = .{
+            .x = @as(f32, @floatFromInt(rl.GetRandomValue(-3000, 3000))) / 1000.0,
+            .y = @as(f32, @floatFromInt(rl.GetRandomValue(-3000, 3000))) / 1000.0,
+        };
+    }
 };
 
 var p1: Player = undefined;
 var p2: Player = undefined;
 var ball: Ball = undefined;
+var score1: i32 = 0;
+var score2: i32 = 0;
+var score1String = "";
+var score2String = "";
 
 pub fn init() void {
     p1 = .{
@@ -49,40 +64,25 @@ pub fn init() void {
     };
 
     ball = .{
-        .center = .{
-            .x = utils.getScreenWidth() / 2,
-            .y = utils.getScreenHeight() / 2,
-        },
+        .center = .{},
         .radius = 10.0,
-        .velocity = .{
-            .x = @as(f32, @floatFromInt(rl.GetRandomValue(0, 1000))) / 900.0 + 1,
-            .y = @as(f32, @floatFromInt(rl.GetRandomValue(0, 1000))) / 900.0 + 1,
-        },
+        .velocity = .{},
         .color = rl.RED,
     };
+    ball.reset();
 
     std.debug.print("player1: {any}", .{p1});
 }
 
 pub fn update() void {
-    if (rl.IsKeyDown(rl.KEY_W)) {
-        p1.rect.y -= 10;
-    }
-
-    if (rl.IsKeyDown(rl.KEY_S)) {
-        p1.rect.y += 10;
-    }
-
+    // player 1 move logic
+    if (rl.IsKeyDown(rl.KEY_W)) p1.rect.y -= 10;
+    if (rl.IsKeyDown(rl.KEY_S)) p1.rect.y += 10;
     p1.rect.y = rl.Clamp(p1.rect.y, 0, utils.getScreenHeight() - p1.rect.height);
 
-    if (rl.IsKeyDown(rl.KEY_UP)) {
-        p2.rect.y -= 10;
-    }
-
-    if (rl.IsKeyDown(rl.KEY_DOWN)) {
-        p2.rect.y += 10;
-    }
-
+    // player 2 move logic
+    if (rl.IsKeyDown(rl.KEY_UP)) p2.rect.y -= 10;
+    if (rl.IsKeyDown(rl.KEY_DOWN)) p2.rect.y += 10;
     p2.rect.y = rl.Clamp(p2.rect.y, 0, utils.getScreenHeight() - p2.rect.height);
 
     ball.center = rl.Vector2Add(ball.center, ball.velocity);
@@ -101,6 +101,18 @@ pub fn update() void {
     {
         ball.bounceVertical();
     }
+
+    // touch left wall
+    if (rl.CheckCollisionCircleLine(ball.center, ball.radius, rl.Vector2{ .x = 0, .y = 0 }, rl.Vector2{ .x = 0, .y = utils.getScreenHeight() })) {
+        score2 += 1;
+        ball.reset();
+    }
+
+    // touch right wall
+    if (rl.CheckCollisionCircleLine(ball.center, ball.radius, rl.Vector2{ .x = utils.getScreenWidth(), .y = 0 }, rl.Vector2{ .x = utils.getScreenWidth(), .y = utils.getScreenHeight() })) {
+        score1 += 1;
+        ball.reset();
+    }
 }
 
 pub fn draw() void {
@@ -109,4 +121,11 @@ pub fn draw() void {
     rl.DrawRectangleRec(p1.rect, p1.color);
     rl.DrawRectangleRec(p2.rect, p2.color);
     rl.DrawCircleV(ball.center, ball.radius, ball.color);
+
+    TODO: create a proper buffer for the score1string
+    _ = std.fmt.formatIntBuf(score1String, score1, 10, .lower, .{});
+    // _ = std.fmt.formatIntBuf(score2String, score2, 10, .lower, .{});
+
+    // rl.DrawText(score1String, @as(c_int, @as(i32, @intFromFloat(utils.getScreenWidth())) / 2 - 20), 10, 12, rl.WHITE);
+    // rl.DrawText(score2String, utils.getScreenWidth() / 2 + 20, 10, 12, rl.WHITE);
 }
