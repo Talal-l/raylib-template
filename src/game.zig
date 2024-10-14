@@ -5,7 +5,7 @@ const game_screen = @import("gamescreen.zig");
 
 pub const GameState = struct {
     allocator: std.mem.Allocator,
-    dark_mode: bool,
+    // GAME SCREEN STATE
     p1: game_screen.Player,
     p2: game_screen.Player,
     ball: game_screen.Ball,
@@ -13,6 +13,7 @@ pub const GameState = struct {
     score2: i32 = 0,
     score1String: [10]u8 = [_]u8{0} ** 10,
     score2String: [10]u8 = [_]u8{0} ** 10,
+    // STATE FOR THE NEXT STATE
 };
 
 export fn gameInit() *anyopaque {
@@ -24,7 +25,6 @@ export fn gameInit() *anyopaque {
         .p1 = game_screen.Player.init(.Player1),
         .p2 = game_screen.Player.init(.Player2),
         .ball = game_screen.Ball.init(),
-        .dark_mode = utils.env_vars.dark_mode,
     };
 
     return game_state;
@@ -33,7 +33,7 @@ export fn gameInit() *anyopaque {
 // this is called after the dll is rebuilt
 export fn gameReload(game_state_ptr: *anyopaque) void {
     const game_state: *GameState = @ptrCast(@alignCast(game_state_ptr));
-    game_state.dark_mode = utils.env_vars.dark_mode;
+    _ = game_state;
 }
 
 export fn gameTick(game_state_ptr: *anyopaque) void {
@@ -43,9 +43,6 @@ export fn gameTick(game_state_ptr: *anyopaque) void {
 
 export fn gameDraw(game_state_ptr: *anyopaque) void {
     const game_state: *GameState = @ptrCast(@alignCast(game_state_ptr));
-    if (game_state.dark_mode) {
-        rl.ClearBackground(rl.BLACK);
-    } else {
-        rl.ClearBackground(rl.RAYWHITE);
-    }
+    _ = game_state;
+    rl.ClearBackground(rl.BLACK);
 }

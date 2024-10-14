@@ -17,13 +17,6 @@ pub fn build(b: *std.Build) !void {
 
     game_dll.linkLibC();
 
-    // exe.addObjectFile(switch (target.result.os.tag) {
-    //     .windows => b.path("raylib/zig-out/lib/raylib.lib"),
-    //     .linux => b.path("raylib/zig-out/lib/libraylib.a"),
-    //     .macos => b.path("raylib/zig-out/lib/libraylib.a"),
-    //     .emscripten => b.path("raylib/zig-out/lib/libraylib.a"),
-    //     else => @panic("Unsupported OS"),
-    // });
     const raylib_dep = b.dependency("raylib", .{
         .target = target,
         .optimize = optimize,
@@ -72,30 +65,6 @@ pub fn build(b: *std.Build) !void {
     }
 
     b.installArtifact(game_dll);
-
-    //* C Source Code Loading
-    // {
-    //     var dir = try std.fs.cwd().openDir("src", .{ .iterate = true });
-    //     defer if (comptime builtin.zig_version.minor >= 12) dir.close();
-
-    //     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    //     defer arena.deinit();
-
-    //     const allocator = arena.allocator();
-    //     var iter = try dir.walk(allocator);
-    //     defer iter.deinit();
-
-    //     while (try iter.next()) |entry| {
-    //         if (entry.kind != .file) continue;
-
-    //         _ = std.mem.lastIndexOf(u8, entry.basename, ".c") orelse continue;
-    //         const path = try std.fs.path.join(b.allocator, &.{ "src", entry.path });
-
-    //         std.debug.print("path {s}\n", .{path});
-
-    //         exe.addCSourceFile(.{ .file = b.path(path), .flags = &.{} });
-    //     }
-    // }
 
     if (!hot_reload) {
         const exe = b.addExecutable(.{
