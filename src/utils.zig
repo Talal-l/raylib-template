@@ -1,4 +1,15 @@
 const rl = @import("rl.zig");
+pub const EnvVars = struct {
+    quit_key: u8,
+    hot_reload_key: u8,
+    dark_mode: bool,
+};
+
+pub var env_vars = EnvVars{
+    .quit_key = 'Q',
+    .hot_reload_key = 'R',
+    .dark_mode = false,
+};
 
 pub fn getScreenWidth() f32 {
     return @floatFromInt(rl.GetScreenWidth());

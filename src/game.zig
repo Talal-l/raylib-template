@@ -3,64 +3,12 @@ const rl = @import("rl.zig");
 const utils = @import("utils.zig");
 const game_screen = @import("gamescreen.zig");
 
-const Player = struct {
-    const width: f32 = 20;
-    const height: f32 = 40;
-
-    rect: rl.Rectangle,
-    color: rl.Color,
-
-    fn init(posX: f32) Player {
-        return .{
-            .rect = .{
-                .x = posX,
-                .y = utils.getScreenHeight() / 2.0,
-                .width = Player.width,
-                .height = Player.height,
-            },
-            .color = rl.RAYWHITE,
-        };
-    }
-};
-
-const Ball = struct {
-    center: rl.Vector2,
-    radius: f32,
-    velocity: rl.Vector2,
-    color: rl.Color,
-    fn init() Ball {
-        var b: Ball = .{
-            .center = .{},
-            .radius = 10.0,
-            .velocity = .{},
-            .color = rl.RED,
-        };
-        b.reset();
-        return b;
-    }
-    fn bounceHorizontal(self: *Ball) void {
-        self.velocity.x = -self.velocity.x;
-    }
-    fn bounceVertical(self: *Ball) void {
-        self.velocity.y = -self.velocity.y;
-    }
-    fn reset(self: *Ball) void {
-        self.center = .{
-            .x = utils.getScreenWidth() / 2,
-            .y = utils.getScreenHeight() / 2,
-        };
-
-        self.velocity = .{
-            .x = @as(f32, @floatFromInt(rl.GetRandomValue(-3000, 3000))) / 1000.0,
-            .y = @as(f32, @floatFromInt(rl.GetRandomValue(-3000, 3000))) / 1000.0,
-        };
-    }
-};
 pub const GameState = struct {
     allocator: std.mem.Allocator,
-    p1: Player,
-    p2: Player,
-    ball: Ball,
+    dark_mode: bool,
+    p1: game_screen.Player,
+    p2: game_screen.Player,
+    ball: game_screen.Ball,
     score1: i32 = 0,
     score2: i32 = 0,
     score1String: [10]u8 = [_]u8{0} ** 10,
@@ -73,9 +21,10 @@ export fn gameInit() *anyopaque {
 
     game_state.* = GameState{
         .allocator = allocator,
-        .p1 = Player.init(20),
-        .p2 = Player.init(utils.getScreenWidth() - Player.width - 20),
-        .ball = Ball.init(),
+        .p1 = game_screen.Player.init(.Player1),
+        .p2 = game_screen.Player.init(.Player2),
+        .ball = game_screen.Ball.init(),
+        .dark_mode = utils.env_vars.dark_mode,
     };
 
     return game_state;
@@ -84,7 +33,7 @@ export fn gameInit() *anyopaque {
 // this is called after the dll is rebuilt
 export fn gameReload(game_state_ptr: *anyopaque) void {
     const game_state: *GameState = @ptrCast(@alignCast(game_state_ptr));
-    _ = game_state;
+    game_state.dark_mode = utils.env_vars.dark_mode;
 }
 
 export fn gameTick(game_state_ptr: *anyopaque) void {
@@ -94,6 +43,9 @@ export fn gameTick(game_state_ptr: *anyopaque) void {
 
 export fn gameDraw(game_state_ptr: *anyopaque) void {
     const game_state: *GameState = @ptrCast(@alignCast(game_state_ptr));
-    _ = game_state;
-    rl.ClearBackground(rl.BLACK);
+    if (game_state.dark_mode) {
+        rl.ClearBackground(rl.BLACK);
+    } else {
+        rl.ClearBackground(rl.RAYWHITE);
+    }
 }
