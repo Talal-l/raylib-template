@@ -16,10 +16,10 @@ pub const Ball = struct {
         b.reset();
         return b;
     }
-    pub fn bounceHorizontal(self: *Ball) void {
+    pub fn flipVelocityHorizontal(self: *Ball) void {
         self.velocity.x = -self.velocity.x;
     }
-    pub fn bounceVertical(self: *Ball) void {
+    pub fn flipVelocityVertical(self: *Ball) void {
         self.velocity.y = -self.velocity.y;
     }
     pub fn scaleVelocity(self: *Ball, scale: f32) void {
@@ -50,7 +50,9 @@ pub const Ball = struct {
 
         self.velocity = .{
             .x = @as(f32, @floatFromInt(rl.GetRandomValue(-3000, 3000))) / 1000.0,
-            .y = @as(f32, @floatFromInt(rl.GetRandomValue(-3000, 3000))) / 1000.0,
+            .y = @as(f32, @floatFromInt(rl.GetRandomValue(-2500, 2500))) / 1000.0,
         };
+        self.velocity = rl.Vector2Normalize(self.velocity);
+        self.scaleVelocity(5);
     }
 };

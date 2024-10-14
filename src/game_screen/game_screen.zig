@@ -1,11 +1,19 @@
+// IMPORTING LIBRARIES
 const std = @import("std");
 const utils = @import("../utils.zig");
 const rl = @import("../rl.zig");
 
-// importing types
+// IMPORTING TYPES
 const GameState = @import("../game.zig").GameState;
 const Player = @import("player.zig").Player;
 const Ball = @import("ball.zig").Ball;
+
+// CONSTS
+const bound_scale_amount = 1.2;
+const new_round_timer = 3;
+
+// VARS
+var start_timer: i64 = 0;
 
 pub const GameScreenState = struct {
     p1: Player,
@@ -27,73 +35,76 @@ pub const GameScreenState = struct {
         };
     }
 
-    // todo: change game_state_ptr to game_screen_state pointer
-    pub fn update(state: *GameScreenState) void {
+    pub fn update(self: *GameScreenState) void {
         // reset ball on space bar
         if (rl.IsKeyDown(rl.KEY_SPACE)) {
-            state.ball.reset();
+            self.ball.reset();
         }
 
-        // player 1 move logic
-        if (rl.IsKeyDown(rl.KEY_W)) state.p1.moveUp();
-        if (rl.IsKeyDown(rl.KEY_S)) state.p1.moveDown();
-        state.p1.clampPosY();
+        self.p1.update();
+        self.p2.update();
 
-        // player 2 move logic
-        if (rl.IsKeyDown(rl.KEY_UP)) state.p2.moveUp();
-        if (rl.IsKeyDown(rl.KEY_DOWN)) state.p2.moveDown();
-        state.p2.clampPosY();
+        if (std.time.timestamp() - start_timer <= 3) {
+            return;
+        }
 
-        // move ball based on its velocity
-        state.ball.center = rl.Vector2Add(state.ball.center, state.ball.velocity);
+        self.ball.update();
 
         // ball touch player 1
-        if (rl.CheckCollisionCircleRec(state.ball.center, state.ball.radius, state.p1.rect)) {
-            state.ball.bounceHorizontal();
-            state.ball.velocity = rl.Vector2Scale(state.ball.velocity, 1.5);
+        if (rl.CheckCollisionCircleRec(self.ball.center, self.ball.radius, self.p1.rect)) {
+            self.ball.flipVelocityHorizontal();
+            self.ball.scaleVelocity(bound_scale_amount);
+            self.ball.center = .{ .x = self.p1.rect.x + self.p1.rect.width + self.ball.radius, .y = self.ball.center.y };
         }
 
         // ball touch player 2
-        if (rl.CheckCollisionCircleRec(state.ball.center, state.ball.radius, state.p2.rect)) {
-            state.ball.bounceHorizontal();
-            state.ball.velocity = rl.Vector2Scale(state.ball.velocity, 1.5);
+        if (rl.CheckCollisionCircleRec(self.ball.center, self.ball.radius, self.p2.rect)) {
+            self.ball.flipVelocityHorizontal();
+            self.ball.scaleVelocity(bound_scale_amount);
+            self.ball.center = .{ .x = self.p2.rect.x - self.ball.radius, .y = self.ball.center.y };
         }
 
-        // ball touch top and bottom walls
-        if (rl.CheckCollisionCircleLine(state.ball.center, state.ball.radius, rl.Vector2{ .x = 0, .y = 0 }, rl.Vector2{ .x = utils.getScreenWidth(), .y = 0 }) or
-            rl.CheckCollisionCircleLine(state.ball.center, state.ball.radius, rl.Vector2{ .x = 0, .y = utils.getScreenHeight() }, rl.Vector2{ .x = utils.getScreenWidth(), .y = utils.getScreenHeight() }))
-        {
-            state.ball.bounceVertical();
+        // ball can go behind the 'front' of player 1, with some leeway
+        if (self.ball.center.x - self.ball.radius <= self.p1.rect.x + self.p1.rect.width / 2) {
+            self.score2 += 1;
+            self.ball.reset();
+            start_timer = std.time.timestamp();
         }
 
-        // ball touch left wall
-        if (rl.CheckCollisionCircleLine(state.ball.center, state.ball.radius, utils.topLeftCorner(), utils.bottomLeftCorner())) {
-            state.score2 += 1;
-            state.ball.reset();
-        }
-
-        // touch right wall
-        if (rl.CheckCollisionCircleLine(state.ball.center, state.ball.radius, utils.topRightCorner(), utils.bottomRightCorner())) {
-            state.score1 += 1;
-            state.ball.reset();
+        // same as above but reversed for player 2
+        if (self.ball.center.x + self.ball.radius >= self.p2.rect.x + self.p2.rect.width / 2) {
+            self.score1 += 1;
+            self.ball.reset();
+            start_timer = std.time.timestamp();
         }
     }
 
-    pub fn draw(state: *GameScreenState) void {
+    pub fn draw(self: *GameScreenState) void {
         rl.ClearBackground(rl.BLACK);
 
-        rl.DrawRectangleRec(state.p1.rect, state.p1.color);
-        rl.DrawRectangleRec(state.p2.rect, state.p2.color);
+        // Draw the scores
+        _ = std.fmt.formatIntBuf(&self.score1String, self.score1, 10, .lower, .{});
+        _ = std.fmt.formatIntBuf(&self.score2String, self.score2, 10, .lower, .{});
+        rl.DrawText(&self.score1String, @divTrunc(rl.GetScreenWidth(), 2) - 20, 10, 40, rl.WHITE);
+        rl.DrawText(&self.score2String, 20 + @divTrunc(rl.GetScreenWidth(), 2), 10, 40, rl.WHITE);
 
-        rl.DrawCircleV(state.ball.center, state.ball.radius, state.ball.color);
+        // Draw players
+        self.p1.draw();
+        self.p2.draw();
 
-        _ = std.fmt.formatIntBuf(&state.score1String, state.score1, 10, .lower, .{});
-        _ = std.fmt.formatIntBuf(&state.score2String, state.score2, 10, .lower, .{});
+        // Draw Ball
+        self.ball.draw();
 
-        const score1PosX = -20 + @as(c_int, @divTrunc(@as(i32, @intFromFloat(utils.getScreenWidth())), 2));
-        rl.DrawText(&state.score1String, score1PosX, 10, 40, rl.WHITE);
+        const time_since_start_timer = std.time.timestamp() - start_timer;
+        if (time_since_start_timer <= 3) {
+            var out_buf: [10]u8 = [_]u8{0} ** 10;
+            const timer_font_size = 60;
+            _ = std.fmt.formatIntBuf(&out_buf, 3 - time_since_start_timer, 10, .lower, .{});
+            const text_size = rl.MeasureTextEx(rl.GetFontDefault(), &out_buf, timer_font_size, 1);
 
-        const score2PosX = 20 + @as(c_int, @divTrunc(@as(i32, @intFromFloat(utils.getScreenWidth())), 2));
-        rl.DrawText(&state.score2String, score2PosX, 10, 40, rl.WHITE);
+            const pos_x: c_int = @divTrunc(rl.GetScreenWidth(), 2) - @as(c_int, @intFromFloat(text_size.x / 2.0));
+            const pos_y: c_int = @divTrunc(rl.GetScreenHeight(), 2) - @as(c_int, @intFromFloat(text_size.y / 2.0));
+            rl.DrawText(&out_buf, pos_x, pos_y, timer_font_size, rl.WHITE);
+        }
     }
 };
