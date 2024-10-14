@@ -25,10 +25,6 @@ pub fn build(b: *std.Build) !void {
 
     game_dll.linkLibrary(raylib_dep.artifact("raylib"));
 
-    // exe.addIncludePath(b.path("raylib/src"));
-    // exe.addIncludePath(b.path("raylib/src/external"));
-    // exe.addIncludePath(b.path("raylib/src/external/glfw/include"));
-
     switch (target.result.os.tag) {
         .windows => {
             std.debug.print("running on windows\n", .{});
