@@ -1,18 +1,12 @@
 const std = @import("std");
 const rl = @import("rl.zig");
 const utils = @import("utils.zig");
-const game_screen = @import("gamescreen.zig");
+const game_screen = @import("game_screen/game_screen.zig");
 
 pub const GameState = struct {
     allocator: std.mem.Allocator,
     // GAME SCREEN STATE
-    p1: game_screen.Player,
-    p2: game_screen.Player,
-    ball: game_screen.Ball,
-    score1: i32 = 0,
-    score2: i32 = 0,
-    score1String: [10]u8 = [_]u8{0} ** 10,
-    score2String: [10]u8 = [_]u8{0} ** 10,
+    game_screen_state: game_screen.GameScreenState,
     // STATE FOR THE NEXT STATE
 };
 
@@ -22,9 +16,7 @@ export fn gameInit() *anyopaque {
 
     game_state.* = GameState{
         .allocator = allocator,
-        .p1 = game_screen.Player.init(.Player1),
-        .p2 = game_screen.Player.init(.Player2),
-        .ball = game_screen.Ball.init(),
+        .game_screen_state = game_screen.GameScreenState.init(),
     };
 
     return game_state;
@@ -33,16 +25,19 @@ export fn gameInit() *anyopaque {
 // this is called after the dll is rebuilt
 export fn gameReload(game_state_ptr: *anyopaque) void {
     const game_state: *GameState = @ptrCast(@alignCast(game_state_ptr));
-    _ = game_state;
+    game_state.* = GameState{
+        .allocator = game_state.allocator,
+        .game_screen_state = game_screen.GameScreenState.init(),
+    };
 }
 
 export fn gameTick(game_state_ptr: *anyopaque) void {
     const game_state: *GameState = @ptrCast(@alignCast(game_state_ptr));
-    _ = game_state;
+    game_state.game_screen_state.update();
 }
 
 export fn gameDraw(game_state_ptr: *anyopaque) void {
     const game_state: *GameState = @ptrCast(@alignCast(game_state_ptr));
-    _ = game_state;
+    game_state.game_screen_state.draw();
     rl.ClearBackground(rl.BLACK);
 }

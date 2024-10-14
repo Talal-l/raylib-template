@@ -1,8 +1,6 @@
 const std = @import("std");
 const rl = @import("rl.zig");
 const utils = @import("utils.zig");
-const quit_key = @import("env.zig").quit_key;
-const hot_reload_key = @import("env.zig").hot_reload_key;
 
 const GameStatePtr = *anyopaque;
 
@@ -29,14 +27,14 @@ pub fn main() !void {
 
     while (!rl.WindowShouldClose()) {
         // quit game on env.quit_key
-        if (rl.IsKeyPressed(quit_key)) {
+        if (rl.IsKeyPressed(rl.KEY_Q)) {
             unloadGameDll() catch unreachable;
             rl.CloseWindow();
             return;
         }
 
         // if hot_reload key is pressed then recompile the DLL and
-        if (rl.IsKeyPressed(hot_reload_key)) {
+        if (rl.IsKeyPressed(rl.KEY_R)) {
             unloadGameDll() catch unreachable;
             recompileGameDll() catch {
                 std.debug.print("Failed to recompile game.dll", .{});
@@ -45,7 +43,10 @@ pub fn main() !void {
             gameReload(game_state);
         }
 
-        // raylib logic
+        // update the game_state
+        gameTick(game_state);
+
+        // drawing
         rl.BeginDrawing();
         gameDraw(game_state);
         rl.EndDrawing();
