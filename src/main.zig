@@ -2,11 +2,10 @@ const std = @import("std");
 const rl = @import("rl.zig");
 const utils = @import("utils.zig");
 
-const GameStatePtr = *anyopaque;
-
 const screen_w = 400;
 const screen_h = 400;
 
+const GameStatePtr = *anyopaque;
 var gameInit: *const fn () GameStatePtr = undefined;
 var gameReload: *const fn (GameStatePtr) void = undefined;
 var gameTick: *const fn (GameStatePtr) void = undefined;
@@ -14,16 +13,16 @@ var gameDraw: *const fn (GameStatePtr) void = undefined;
 
 pub fn main() !void {
     // recompile so that initial run can have changes
+    rl.SetWindowMonitor(0);
+    rl.InitWindow(screen_w, screen_h, "Pong");
+    rl.SetTargetFPS(60);
+
     recompileGameDll() catch {
         std.debug.print("Failed to recompile game.dll", .{});
     };
     loadGameDll() catch @panic("Failed to load game.so");
 
     const game_state = gameInit();
-
-    rl.SetWindowMonitor(0);
-    rl.InitWindow(screen_w, screen_h, "Pong");
-    rl.SetTargetFPS(60);
 
     while (!rl.WindowShouldClose()) {
         // quit game on env.quit_key
