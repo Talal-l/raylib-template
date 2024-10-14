@@ -22,9 +22,7 @@ export fn gameInit() *anyopaque {
 export fn gameReload(game_state_ptr: *anyopaque) void {
     const game_state: *GameState = @ptrCast(@alignCast(game_state_ptr));
 
-    game_state.* = GameState{
-        .game_screen_state = game_screen.GameScreenState.init(),
-    };
+    _ = game_state;
 }
 
 export fn gameTick(game_state_ptr: *anyopaque) void {
