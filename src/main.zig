@@ -2,14 +2,19 @@ const std = @import("std");
 const rl = @import("rl.zig");
 const utils = @import("utils.zig");
 
-const screen_w = 400;
-const screen_h = 400;
-
+// Dynamic Library Functions
 const GameStatePtr = *anyopaque;
 var gameInit: *const fn () GameStatePtr = undefined;
 var gameReload: *const fn (GameStatePtr) void = undefined;
 var gameTick: *const fn (GameStatePtr) void = undefined;
 var gameDraw: *const fn (GameStatePtr) void = undefined;
+
+// Consts
+const screen_w = 400;
+const screen_h = 400;
+
+// Vars
+var paused = false;
 
 pub fn main() !void {
     // recompile so that initial run can have changes
@@ -42,8 +47,14 @@ pub fn main() !void {
             gameReload(game_state);
         }
 
+        if (rl.IsKeyPressed(rl.KEY_P)) {
+            paused = !paused;
+        }
+
         // update the game_state
-        gameTick(game_state);
+        if (!paused) {
+            gameTick(game_state);
+        }
 
         // drawing
         rl.BeginDrawing();
