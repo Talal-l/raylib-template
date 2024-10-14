@@ -7,6 +7,8 @@ pub const Player = struct {
 
     rect: rl.Rectangle,
     color: rl.Color,
+    move_up_key: i32,
+    move_down_key: i32,
 
     pub fn init(player_type: PlayerType) Player {
         return .{
@@ -17,8 +19,11 @@ pub const Player = struct {
                 .height = Player.height,
             },
             .color = if (player_type == .Player1) rl.BEIGE else rl.DARKBROWN,
+            .move_up_key = if (player_type == .Player1) rl.KEY_W else rl.KEY_UP,
+            .move_down_key = if (player_type == .Player1) rl.KEY_S else rl.KEY_DOWN,
         };
     }
+    // TODO: add velocity and acceleration 0^0 ehheheeheh
     pub fn moveDown(self: *Player) void {
         self.rect.y += 10;
     }
@@ -27,8 +32,8 @@ pub const Player = struct {
     }
     /// move on key press
     pub fn update(self: *Player) void {
-        if (rl.IsKeyDown(rl.KEY_W)) self.moveUp();
-        if (rl.IsKeyDown(rl.KEY_S)) self.moveDown();
+        if (rl.IsKeyDown(self.move_up_key)) self.moveUp();
+        if (rl.IsKeyDown(self.move_down_key)) self.moveDown();
         self.clampPosY();
     }
     /// draw the player rectangle
