@@ -25,6 +25,17 @@ pub const Player = struct {
     pub fn moveUp(self: *Player) void {
         self.rect.y -= 10;
     }
+    /// move on key press
+    pub fn update(self: *Player) void {
+        if (rl.IsKeyDown(rl.KEY_W)) self.moveUp();
+        if (rl.IsKeyDown(rl.KEY_S)) self.moveDown();
+        self.clampPosY();
+    }
+    /// draw the player rectangle
+    pub fn draw(self: *Player) void {
+        rl.DrawRectangleRec(self.rect, self.color);
+    }
+    /// clamp the y so player doesnt move out of the screen
     pub fn clampPosY(self: *Player) void {
         self.rect.y = rl.Clamp(self.rect.y, 0, utils.getScreenHeight() - self.rect.height);
     }

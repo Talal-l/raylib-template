@@ -22,6 +22,26 @@ pub const Ball = struct {
     pub fn bounceVertical(self: *Ball) void {
         self.velocity.y = -self.velocity.y;
     }
+    pub fn scaleVelocity(self: *Ball, scale: f32) void {
+        self.velocity = rl.Vector2Scale(self.velocity, scale);
+    }
+
+    /// move ball based on its velocity
+    ///
+    /// ball touch top or bottom walls
+    pub fn update(self: *Ball) void {
+        self.center = rl.Vector2Add(self.center, self.velocity);
+        if (rl.CheckCollisionCircleLine(self.center, self.radius, rl.Vector2{ .x = 0, .y = 0 }, rl.Vector2{ .x = utils.getScreenWidth(), .y = 0 }) or
+            rl.CheckCollisionCircleLine(self.center, self.radius, rl.Vector2{ .x = 0, .y = utils.getScreenHeight() }, rl.Vector2{ .x = utils.getScreenWidth(), .y = utils.getScreenHeight() }))
+        {
+            self.flipVelocityVertical();
+        }
+    }
+    /// draw ball circle
+    pub fn draw(self: *Ball) void {
+        rl.DrawCircleV(self.center, self.radius, self.color);
+    }
+    /// reset the balls position and velocity
     pub fn reset(self: *Ball) void {
         self.center = .{
             .x = utils.getScreenWidth() / 2,
