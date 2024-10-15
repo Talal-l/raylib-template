@@ -1,7 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-const program_name = "TEMPLATE";
+const program_name = "Zing";
 
 pub fn build(b: *std.Build) !void {
     const hot_reload = b.option(bool, "hot_reload", "Only hot reload") orelse false;
