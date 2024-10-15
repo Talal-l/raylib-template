@@ -23,12 +23,29 @@ pub const IntroScreenState = struct {
 
     /// draw the intro screen
     pub fn draw(self: *IntroScreenState) void {
-        _ = self;
-        rl.ClearBackground(rl.RAYWHITE);
         const text_size = rl.MeasureTextEx(rl.GetFontDefault(), "Zing", 70, 1);
         const text_pos_x: c_int = @divTrunc(rl.GetScreenWidth(), 2) - @as(c_int, @intFromFloat(text_size.x / 2));
         const text_pos_y: c_int = @divTrunc(rl.GetScreenHeight(), 2) - @as(c_int, @intFromFloat(text_size.y / 2));
 
+        rl.ClearBackground(rl.RAYWHITE);
         rl.DrawText("Zing", text_pos_x, text_pos_y, 70, rl.BLACK);
+
+        // TODO: make this work
+        // Black screen ontop to give fade in/out effect
+        var time_f: f32 = @floatFromInt(std.time.milliTimestamp() - self.start_timer * 1000);
+        time_f /= 1000;
+
+        const fade_alpha: u8 = @intFromFloat(rl.Remap(
+            @floatCast(rl.sin(
+                rl.Remap(time_f, 0.0, 5.0, 0.0, rl.PI),
+            )),
+            0,
+            1,
+            0,
+            255,
+        ));
+        std.debug.print("alpha: {d}\n", .{fade_alpha});
+
+        rl.ClearBackground(.{ .r = 0, .g = 0, .b = 0, .a = 0 });
     }
 };

@@ -15,7 +15,7 @@ const screen_h = 400;
 
 // Vars
 var paused = false;
-var enable_shaders = true;
+var enable_shaders = false;
 
 // Shader uniform
 var u_time: f32 = 0.0;
@@ -32,11 +32,10 @@ pub fn main() !void {
     loadGameDll() catch @panic("Failed to load game.so");
 
     const game_state = gameInit();
-    const shader = rl.LoadShader(0, "src/resources/shaders/p1.fs");
     const target = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight());
+    const shader = rl.LoadShader(0, "src/resources/shaders/blur.fs");
 
     while (!rl.WindowShouldClose()) {
-
         // quit game on env.quit_key
         if (rl.IsKeyPressed(rl.KEY_Q)) {
             unloadGameDll() catch unreachable;
