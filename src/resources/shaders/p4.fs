@@ -1,4 +1,3 @@
-
 #version 330
 
 precision mediump float;
@@ -11,38 +10,8 @@ in vec4 fragColor;
 // uniform vec2 u_resolution;
 uniform float u_time;
 
-// // Input uniform values
-// uniform sampler2D texture0;
-// uniform vec4 colDiffuse;
-
-// // Output fragment color
+// Output fragment color
 out vec4 finalColor;
-
-// // NOTE: Add here your custom variables
-
-// // NOTE: Render size values must be passed from code
-// const float renderWidth = 800;
-// const float renderHeight = 450;
-
-// float offset[3] = float[](0.0, 1.3846153846, 3.2307692308);
-// float weight[3] = float[](0.2270270270, 0.3162162162, 0.0702702703);
-
-// void main()
-// {
-//     // Texel color fetching from texture sampler
-//     vec3 texelColor = texture(texture0, fragTexCoord).rgb*weight[0];
-
-//     for (int i = 1; i < 3; i++)
-//     {
-//         texelColor += texture(texture0, fragTexCoord + vec2(offset[i])/renderWidth, 0.0).rgb*weight[i];
-//         texelColor += texture(texture0, fragTexCoord - vec2(offset[i])/renderWidth, 0.0).rgb*weight[i];
-//     }
-
-//     finalColor = vec4(texelColor, 1.0);
-// }
-
-
-
 
 vec4 permute(vec4 x) {
     return mod(((x * 34.0) + 1.0) * x, 289.0);
@@ -158,9 +127,4 @@ vec4 image(vec2 fragCoord) {
 void main() {
     finalColor = image(fragTexCoord);
 }
-
-
-
-
-
 

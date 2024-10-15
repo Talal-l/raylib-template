@@ -1,10 +1,11 @@
-#ifdef GL_ES
-precision mediump float;
-#endif
+#version 330
 
+precision mediump float;
+
+in vec2 fragTexCoord;
 uniform float u_time;
-uniform float u_resolution;
-varying vec2 v_uv;
+
+out vec4 finalColor;
 
 vec4 permute(vec4 x) {
     return mod(((x * 34.0) + 1.0) * x, 289.0);
@@ -83,6 +84,5 @@ vec4 image(vec2 fragCoord) {
 }
 
 void main() {
-    gl_FragColor = image(v_uv);
-    // gl_FragColor = image(gl_FragCoord.xy / u_resolution);
+    finalColor = image(fragTexCoord);
 }

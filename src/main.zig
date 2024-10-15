@@ -32,7 +32,7 @@ pub fn main() !void {
     loadGameDll() catch @panic("Failed to load game.so");
 
     const game_state = gameInit();
-    const shader = rl.LoadShader(0, "src/resources/shaders/frag3.fs");
+    const shader = rl.LoadShader(0, "src/resources/shaders/p1.fs");
     const target = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight());
 
     while (!rl.WindowShouldClose()) {
