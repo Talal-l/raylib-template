@@ -4,7 +4,6 @@ const utils = @import("../utils.zig");
 const rl = @import("../rl.zig");
 
 // IMPORTING TYPES
-const GameState = @import("../game.zig").GameState;
 const Player = @import("player.zig").Player;
 const Ball = @import("ball.zig").Ball;
 
@@ -12,9 +11,7 @@ const Ball = @import("ball.zig").Ball;
 const bound_scale_amount = 1.2;
 const new_round_timer = 3;
 
-// VARS
-var start_timer: i64 = 0;
-
+// STATE
 pub const GameScreenState = struct {
     p1: Player,
     p2: Player,
@@ -23,6 +20,7 @@ pub const GameScreenState = struct {
     score2: i32,
     score1String: [10]u8,
     score2String: [10]u8,
+    start_timer: i64,
     pub fn init() GameScreenState {
         return .{
             .p1 = Player.init(.Player1),
@@ -32,6 +30,7 @@ pub const GameScreenState = struct {
             .score2 = 0,
             .score1String = [_]u8{0} ** 10,
             .score2String = [_]u8{0} ** 10,
+            .start_timer = 0,
         };
     }
 
@@ -44,7 +43,7 @@ pub const GameScreenState = struct {
         self.p1.update();
         self.p2.update();
 
-        if (std.time.timestamp() - start_timer <= 3) {
+        if (std.time.timestamp() - self.start_timer <= 3) {
             return;
         }
 
@@ -68,14 +67,14 @@ pub const GameScreenState = struct {
         if (self.ball.center.x - self.ball.radius <= self.p1.rect.x + self.p1.rect.width / 2) {
             self.score2 += 1;
             self.ball.reset();
-            start_timer = std.time.timestamp();
+            self.start_timer = std.time.timestamp();
         }
 
         // same as above but reversed for player 2
         if (self.ball.center.x + self.ball.radius >= self.p2.rect.x + self.p2.rect.width / 2) {
             self.score1 += 1;
             self.ball.reset();
-            start_timer = std.time.timestamp();
+            self.start_timer = std.time.timestamp();
         }
     }
 
@@ -95,7 +94,7 @@ pub const GameScreenState = struct {
         // Draw Ball
         self.ball.draw();
 
-        const time_since_start_timer = std.time.timestamp() - start_timer;
+        const time_since_start_timer = std.time.timestamp() - self.start_timer;
         if (time_since_start_timer <= 3) {
             var out_buf: [10]u8 = [_]u8{0} ** 10;
             const timer_font_size = 60;
