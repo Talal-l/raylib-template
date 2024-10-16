@@ -49,6 +49,8 @@ pub const GameScreenState = struct {
 
         self.ball.update();
 
+        // TODO: add some physics with the bounce so that the angle the balls flies off on is relative to the face on the ball
+        //  make sure to clamp the shit out of it so you dont have to wait 1 million years because the player hit the skibbity corner
         // ball touch player 1
         if (rl.CheckCollisionCircleRec(self.ball.center, self.ball.radius, self.p1.rect)) {
             self.ball.flipVelocityHorizontal();
