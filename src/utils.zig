@@ -15,8 +15,16 @@ pub fn getScreenWidth() f32 {
     return @floatFromInt(rl.GetScreenWidth());
 }
 
+pub fn getHalfScreenWidth() f32 {
+    return getScreenWidth() / 2.0;
+}
+
 pub fn getScreenHeight() f32 {
     return @floatFromInt(rl.GetScreenHeight());
+}
+
+pub fn getHalfScreenHeight() f32 {
+    return getScreenHeight() / 2.0;
 }
 
 pub fn topLeftCorner() rl.Vector2 {
