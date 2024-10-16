@@ -1,6 +1,7 @@
 // importing libraries
 const std = @import("std");
 const rl = @import("../rl.zig");
+const utils = @import("../utils.zig");
 
 pub const IntroScreenState = struct {
     start_timer: i64,
@@ -30,7 +31,6 @@ pub const IntroScreenState = struct {
         rl.ClearBackground(rl.RAYWHITE);
         rl.DrawText("Zing", text_pos_x, text_pos_y, 70, rl.BLACK);
 
-        // TODO: make this work
         // Black screen ontop to give fade in/out effect
         var time_f: f32 = @floatFromInt(std.time.milliTimestamp() - self.start_timer * 1000);
         time_f /= 1000;
@@ -41,11 +41,13 @@ pub const IntroScreenState = struct {
             )),
             0,
             1,
-            0,
             255,
+            0,
         ));
-        std.debug.print("alpha: {d}\n", .{fade_alpha});
 
-        rl.ClearBackground(.{ .r = 0, .g = 0, .b = 0, .a = 0 });
+        rl.DrawRectangleRec(
+            .{ .x = 0, .y = 0, .width = utils.getScreenWidth(), .height = utils.getScreenHeight() },
+            .{ .r = 0, .g = 0, .b = 0, .a = fade_alpha },
+        );
     }
 };
