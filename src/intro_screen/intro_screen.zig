@@ -15,6 +15,9 @@ pub const IntroScreenState = struct {
 
     /// Check if enough time has elapsed to change 'done' flag to true
     pub fn update(self: *IntroScreenState) void {
+        if (rl.IsKeyPressed(rl.KEY_ENTER)) {
+            self.done = true;
+        }
         if (std.time.timestamp() - self.start_timer < 5) {
             return;
         }
