@@ -36,5 +36,6 @@ void main()
         texelColor += texture(texture0, fragTexCoord - vec2(offset[i])/renderWidth, 0.0).rgb*weight[i];
     }
 
+    // finalColor = vec4(1,0,0,1);
     finalColor = vec4(texelColor, 1.0);
 }
