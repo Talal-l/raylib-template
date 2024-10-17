@@ -8,6 +8,7 @@ var gameInit: *const fn () GameStatePtr = undefined;
 var gameReload: *const fn (GameStatePtr) void = undefined;
 var gameTick: *const fn (GameStatePtr) void = undefined;
 var gameDraw: *const fn (GameStatePtr) void = undefined;
+var gameEnd: *const fn (GameStatePtr) void = undefined;
 
 // Consts
 const screen_w = 400;
@@ -66,7 +67,8 @@ pub fn main() !void {
         gameDraw(game_state_ptr);
     }
 
-    // clean up
+    // CLEAN UP
+    gameEnd(game_state_ptr);
     rl.CloseWindow();
 }
 
@@ -91,6 +93,7 @@ fn loadGameDll() !void {
     gameReload = dyn_lib.lookup(@TypeOf(gameReload), "gameReload") orelse return error.LookupFail;
     gameTick = dyn_lib.lookup(@TypeOf(gameTick), "gameTick") orelse return error.LookupFail;
     gameDraw = dyn_lib.lookup(@TypeOf(gameDraw), "gameDraw") orelse return error.LookupFail;
+    gameEnd = dyn_lib.lookup(@TypeOf(gameEnd), "gameEnd") orelse return error.LookupFail;
     std.log.debug("loaded game DLL", .{});
 }
 

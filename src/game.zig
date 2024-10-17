@@ -114,7 +114,7 @@ export fn gameDraw(game_state_ptr: *anyopaque) void {
     rl.EndDrawing();
 }
 
-fn gameEnd(game_state_ptr: *anyopaque) void {
+export fn gameEnd(game_state_ptr: *anyopaque) void {
     const game_state: *GameState = @ptrCast(@alignCast(game_state_ptr));
 
     rl.UnloadRenderTexture(game_state.target);
