@@ -8,8 +8,9 @@ const Player = @import("player.zig").Player;
 const Ball = @import("ball.zig").Ball;
 
 // CONSTS
-const bound_scale_amount = 1.2;
-const new_round_timer = 3;
+const BOUNCE_SCALE_AMOUNT = 1.2;
+const NEW_ROUND_TIMER_LENGTH = 3;
+const BALL_BOUND_SFX_PATH = "assets/sfx/ball_bounce.wav";
 
 // STATE
 pub const GameScreenState = struct {
@@ -21,6 +22,8 @@ pub const GameScreenState = struct {
     score1String: [10]u8,
     score2String: [10]u8,
     start_timer: i64,
+    ball_bounce_sfx: rl.Sound,
+
     pub fn init() GameScreenState {
         return .{
             .p1 = Player.init(.Player1),
@@ -31,6 +34,7 @@ pub const GameScreenState = struct {
             .score1String = [_]u8{0} ** 10,
             .score2String = [_]u8{0} ** 10,
             .start_timer = 0,
+            .ball_bounce_sfx = rl.LoadSound(BALL_BOUND_SFX_PATH),
         };
     }
 
@@ -54,15 +58,17 @@ pub const GameScreenState = struct {
         // ball touch player 1
         if (rl.CheckCollisionCircleRec(self.ball.center, self.ball.radius, self.p1.rect)) {
             self.ball.flipVelocityHorizontal();
-            self.ball.scaleVelocity(bound_scale_amount);
+            self.ball.scaleVelocity(BOUNCE_SCALE_AMOUNT);
             self.ball.center = .{ .x = self.p1.rect.x + self.p1.rect.width + self.ball.radius, .y = self.ball.center.y };
+            rl.PlaySound(self.ball_bounce_sfx);
         }
 
         // ball touch player 2
         if (rl.CheckCollisionCircleRec(self.ball.center, self.ball.radius, self.p2.rect)) {
             self.ball.flipVelocityHorizontal();
-            self.ball.scaleVelocity(bound_scale_amount);
+            self.ball.scaleVelocity(BOUNCE_SCALE_AMOUNT);
             self.ball.center = .{ .x = self.p2.rect.x - self.ball.radius, .y = self.ball.center.y };
+            rl.PlaySound(self.ball_bounce_sfx);
         }
 
         // ball can go behind the 'front' of player 1, with some leeway
