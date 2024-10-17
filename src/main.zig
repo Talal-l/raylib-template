@@ -8,22 +8,22 @@ var gameInit: *const fn () GameStatePtr = undefined;
 var gameReload: *const fn (GameStatePtr) void = undefined;
 var gameTick: *const fn (GameStatePtr) void = undefined;
 var gameDraw: *const fn (GameStatePtr) void = undefined;
-var gameEnd: *const fn (GameStatePtr) void = undefined;
+var gameUnload: *const fn (GameStatePtr) void = undefined;
 
 // Consts
 const screen_w = 400;
 const screen_h = 400;
 
-// Vars
-var paused = false;
-var enable_shaders = false;
-
 pub fn main() !void {
-    // recompile so that initial run can have changes
+    // INIT WINDOW
     rl.SetWindowMonitor(0);
     rl.InitWindow(screen_w, screen_h, "Zing");
     rl.SetTargetFPS(60);
 
+    // INIT AUDIO
+    rl.InitAudioDevice();
+
+    // LOAD .DYLIB/.DLL/.SO
     recompileGameDll() catch {
         std.debug.print("Failed to recompile game.dll", .{});
     };
@@ -49,26 +49,13 @@ pub fn main() !void {
             gameReload(game_state_ptr);
         }
 
-        // ENABLE SHADERS
-        if (rl.IsKeyPressed(rl.KEY_E)) {
-            enable_shaders = !enable_shaders;
-        }
-
-        // PAUSE
-        if (rl.IsKeyPressed(rl.KEY_P)) {
-            paused = !paused;
-        }
-
-        // GAME UPDATE
-        if (!paused) {
-            gameTick(game_state_ptr);
-        }
+        gameTick(game_state_ptr);
 
         gameDraw(game_state_ptr);
     }
 
     // CLEAN UP
-    gameEnd(game_state_ptr);
+    gameUnload(game_state_ptr);
     rl.CloseWindow();
 }
 
@@ -93,7 +80,7 @@ fn loadGameDll() !void {
     gameReload = dyn_lib.lookup(@TypeOf(gameReload), "gameReload") orelse return error.LookupFail;
     gameTick = dyn_lib.lookup(@TypeOf(gameTick), "gameTick") orelse return error.LookupFail;
     gameDraw = dyn_lib.lookup(@TypeOf(gameDraw), "gameDraw") orelse return error.LookupFail;
-    gameEnd = dyn_lib.lookup(@TypeOf(gameEnd), "gameEnd") orelse return error.LookupFail;
+    gameUnload = dyn_lib.lookup(@TypeOf(gameUnload), "gameUnload") orelse return error.LookupFail;
     std.log.debug("loaded game DLL", .{});
 }
 
