@@ -17,9 +17,6 @@ const screen_h = 400;
 var paused = false;
 var enable_shaders = false;
 
-// Shader uniform
-var u_time: f32 = 0.0;
-
 pub fn main() !void {
     // recompile so that initial run can have changes
     rl.SetWindowMonitor(0);
@@ -31,74 +28,46 @@ pub fn main() !void {
     };
     loadGameDll() catch @panic("Failed to load game.so");
 
-    const game_state = gameInit();
-    const target = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight());
-    const shader = rl.LoadShader(0, "src/resources/shaders/blur.fs");
+    const game_state_ptr = gameInit();
 
     while (!rl.WindowShouldClose()) {
-        // quit game on env.quit_key
+        // QUIT GAME
         if (rl.IsKeyPressed(rl.KEY_Q)) {
             unloadGameDll() catch unreachable;
             rl.CloseWindow();
             return;
         }
 
-        // if hot_reload key is pressed then recompile the DLL and
+        // HOT RELOAD
         if (rl.IsKeyPressed(rl.KEY_R)) {
             unloadGameDll() catch unreachable;
             recompileGameDll() catch {
                 std.debug.print("Failed to recompile game.dll", .{});
             };
             loadGameDll() catch @panic("Failed to load game.dll");
-            gameReload(game_state);
+            gameReload(game_state_ptr);
         }
 
+        // ENABLE SHADERS
         if (rl.IsKeyPressed(rl.KEY_E)) {
             enable_shaders = !enable_shaders;
         }
 
+        // PAUSE
         if (rl.IsKeyPressed(rl.KEY_P)) {
             paused = !paused;
         }
 
-        // update the game_state
+        // GAME UPDATE
         if (!paused) {
-            gameTick(game_state);
+            gameTick(game_state_ptr);
         }
 
-        // draw to texture
-        rl.BeginTextureMode(target);
-        {
-            rl.ClearBackground(rl.RAYWHITE);
-            gameDraw(game_state);
-        }
-        rl.EndTextureMode();
-
-        // TODO: move all drawing logic into game.zig to have it hot reload
-        // display the texture with the given shader
-        rl.BeginDrawing();
-        {
-            if (enable_shaders) {
-                rl.BeginShaderMode(shader);
-                {
-                    u_time += rl.GetFrameTime();
-                    const u_time_loc = rl.GetShaderLocation(shader, "u_time");
-                    rl.SetShaderValue(shader, u_time_loc, &u_time, rl.SHADER_UNIFORM_FLOAT);
-                    // flip the coordinates as openGL defaults (left-bottom)
-                    rl.DrawTextureRec(target.texture, .{ .x = 0, .y = 0, .width = @as(f32, @floatFromInt(target.texture.width)), .height = @as(f32, @floatFromInt(-target.texture.height)) }, .{ .x = 0, .y = 0 }, rl.WHITE);
-                }
-                rl.EndShaderMode();
-            } else {
-                rl.DrawTextureRec(target.texture, .{ .x = 0, .y = 0, .width = @as(f32, @floatFromInt(target.texture.width)), .height = @as(f32, @floatFromInt(-target.texture.height)) }, .{ .x = 0, .y = 0 }, rl.WHITE);
-            }
-        }
-        rl.EndDrawing();
+        gameDraw(game_state_ptr);
     }
 
     // clean up
     rl.CloseWindow();
-    rl.UnloadRenderTexture(target);
-    rl.UnloadShader(shader);
 }
 
 var game_dyn_lib: ?std.DynLib = null;
